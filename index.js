@@ -59,7 +59,7 @@ let login = async (page) => {
         puppeteerExtra.use(stealthPlugin()); 
         const browser = await puppeteerExtra.launch({ headless: process.env.headless || false });
         const page = (await browser.pages())[0];
-
+        await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0");
         await login(page); // Log user
         console.log(`Successfully logged in as: ${username}`);
         await page.goto("https://freelancesage.com/play");
@@ -93,7 +93,7 @@ let login = async (page) => {
                         el.click();
                     })
                     await page.waitForTimeout(800); // Wait atleast 800ms
-                    await page.waitForSelector('.total_points', { visible: true }).then(el => {
+                    await page.waitForSelector('.total_points', { visible: true }).then(async (el) => {
                         points = await el.evaluate(k => k.innerText);
                         console.log(`~~~ Game Over! You won ${points} points ~~~`);
                     })
@@ -105,7 +105,12 @@ let login = async (page) => {
                 if ((k % 10) == 0) {
                     console.log(`[${k}] - ${wrd}`)
                 }
-                await page.type('#quoteInput', wrd);
+                try {
+                    await page.type('#quoteInput', wrd);
+                } catch (e) {
+                    console.log("Can't type anymore so skipping loop");
+                    continue;
+                }
             }
         }
 
